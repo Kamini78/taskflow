@@ -7,84 +7,152 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Temporary storage
 let tasks = [];
 
-// Home route
-app.get("/", (req, res) => {
-  res.send("TaskFlow Backend Running");
-});
+app.get("/", (req,res)=>{
 
-// Get all tasks
-app.get("/tasks", (req, res) => {
-  res.json(tasks);
-});
-
-// Add task
-app.post("/tasks", (req, res) => {
-
-  const newTask = {
-
-    id: uuidv4(),
-
-    title: req.body.title,
-
-    completed: false
-
-  };
-
-  tasks.unshift(newTask);
-
-  res.status(201).json(newTask);
+res.send(
+"TaskFlow Backend Running"
+);
 
 });
 
-// Toggle complete / incomplete
-app.patch("/tasks/:id/toggle", (req, res) => {
+app.get("/tasks",(req,res)=>{
 
-  const task = tasks.find(
-    task =>
-      task.id === req.params.id
-  );
-
-  if (!task) {
-
-    return res.status(404).json({
-      message:
-      "Task not found"
-    });
-
-  }
-
-  task.completed =
-    !task.completed;
-
-  res.json(task);
+res.json(tasks);
 
 });
 
-// Delete task
-app.delete("/tasks/:id", (req, res) => {
+app.post("/tasks",(req,res)=>{
 
-  tasks =
-  tasks.filter(
-    task =>
-      task.id !==
-      req.params.id
-  );
+const newTask={
 
-  res.json({
-    message:
-    "Task deleted"
-  });
+id:uuidv4(),
+
+title:req.body.title,
+
+description:
+req.body.description || "",
+
+dueDate:
+req.body.dueDate || "",
+
+completed:false,
+
+createdAt:
+Date.now()
+
+};
+
+tasks.unshift(
+newTask
+);
+
+res
+.status(201)
+.json(newTask);
 
 });
 
-// Start server
-app.listen(5000, () => {
+app.patch(
+"/tasks/:id/toggle",
+
+(req,res)=>{
+
+const task=
+tasks.find(
+t=>
+t.id===
+req.params.id
+);
+
+if(!task){
+
+return res
+.status(404)
+.json({
+message:
+"Task not found"
+});
+
+}
+
+task.completed=
+!task.completed;
+
+res.json(task);
+
+}
+
+);
+
+app.put(
+"/tasks/:id",
+
+(req,res)=>{
+
+const task=
+tasks.find(
+t=>
+t.id===
+req.params.id
+);
+
+if(!task){
+
+return res
+.status(404)
+.json({
+message:
+"Task not found"
+});
+
+}
+
+task.title=
+req.body.title;
+
+task.description=
+req.body.description;
+
+task.dueDate=
+req.body.dueDate;
+
+res.json(task);
+
+}
+
+);
+
+app.delete(
+"/tasks/:id",
+
+(req,res)=>{
+
+tasks=
+tasks.filter(
+t=>
+t.id!==
+req.params.id
+);
+
+res.json({
+message:
+"Task deleted"
+});
+
+}
+
+);
+
+app.listen(
+5000,
+
+()=>{
 
 console.log(
 "Server started on port 5000"
 );
 
-});
+}
+);
