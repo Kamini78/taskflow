@@ -12,48 +12,79 @@ let tasks = [];
 
 // Home route
 app.get("/", (req, res) => {
- res.send("TaskFlow Backend Running");
+  res.send("TaskFlow Backend Running");
 });
 
 // Get all tasks
 app.get("/tasks", (req, res) => {
- res.json(tasks);
+  res.json(tasks);
 });
 
 // Add task
 app.post("/tasks", (req, res) => {
 
- const newTask = {
-   id: uuidv4(),
-   title: req.body.title,
-   completed: false
- };
+  const newTask = {
 
- tasks.push(newTask);
+    id: uuidv4(),
 
- res.status(201).json(newTask);
+    title: req.body.title,
+
+    completed: false
+
+  };
+
+  tasks.unshift(newTask);
+
+  res.status(201).json(newTask);
 
 });
 
 // Toggle complete / incomplete
 app.patch("/tasks/:id/toggle", (req, res) => {
 
- const task = tasks.find(
-   t => t.id === req.params.id
- );
+  const task = tasks.find(
+    task =>
+      task.id === req.params.id
+  );
 
- if (!task) {
-   return res.status(404).json({
-     message: "Task not found"
-   });
- }
+  if (!task) {
 
- task.completed = !task.completed;
+    return res.status(404).json({
+      message:
+      "Task not found"
+    });
 
- res.json(task);
+  }
+
+  task.completed =
+    !task.completed;
+
+  res.json(task);
 
 });
 
+// Delete task
+app.delete("/tasks/:id", (req, res) => {
+
+  tasks =
+  tasks.filter(
+    task =>
+      task.id !==
+      req.params.id
+  );
+
+  res.json({
+    message:
+    "Task deleted"
+  });
+
+});
+
+// Start server
 app.listen(5000, () => {
- console.log("Server started on port 5000");
+
+console.log(
+"Server started on port 5000"
+);
+
 });
