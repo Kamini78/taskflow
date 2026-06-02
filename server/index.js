@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
@@ -7,9 +9,50 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-let tasks = [];
+const filePath =
+path.join(
+__dirname,
+"tasks.json"
+);
 
-app.get("/", (req,res)=>{
+function readTasks(){
+
+try{
+
+return JSON.parse(
+fs.readFileSync(
+filePath,
+"utf8"
+)
+);
+
+}
+
+catch{
+
+return [];
+
+}
+
+}
+
+function saveTasks(data){
+
+fs.writeFileSync(
+filePath,
+JSON.stringify(
+data,
+null,
+2
+)
+);
+
+}
+
+let tasks=
+readTasks();
+
+app.get("/",(req,res)=>{
 
 res.send(
 "TaskFlow Backend Running"
@@ -25,11 +68,13 @@ res.json(tasks);
 
 app.post("/tasks",(req,res)=>{
 
-const newTask={
+const task={
 
-id:uuidv4(),
+id:
+uuidv4(),
 
-title:req.body.title,
+title:
+req.body.title,
 
 description:
 req.body.description || "",
@@ -37,7 +82,8 @@ req.body.description || "",
 dueDate:
 req.body.dueDate || "",
 
-completed:false,
+completed:
+false,
 
 createdAt:
 Date.now()
@@ -45,12 +91,16 @@ Date.now()
 };
 
 tasks.unshift(
-newTask
+task
+);
+
+saveTasks(
+tasks
 );
 
 res
 .status(201)
-.json(newTask);
+.json(task);
 
 });
 
@@ -79,6 +129,10 @@ message:
 
 task.completed=
 !task.completed;
+
+saveTasks(
+tasks
+);
 
 res.json(task);
 
@@ -118,6 +172,10 @@ req.body.description;
 task.dueDate=
 req.body.dueDate;
 
+saveTasks(
+tasks
+);
+
 res.json(task);
 
 }
@@ -136,9 +194,13 @@ t.id!==
 req.params.id
 );
 
+saveTasks(
+tasks
+);
+
 res.json({
 message:
-"Task deleted"
+"Deleted"
 });
 
 }

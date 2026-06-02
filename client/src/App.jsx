@@ -11,15 +11,14 @@ const [filter,setFilter]=useState("all");
 
 async function loadTasks(){
 
-const response=
+const res=
 await fetch(
 "http://localhost:5000/tasks"
 );
 
-const data=
-await response.json();
-
-setTasks(data);
+setTasks(
+await res.json()
+);
 
 }
 
@@ -30,8 +29,13 @@ loadTasks();
 async function addTask(){
 
 if(!title.trim()){
-alert("Title required");
+
+alert(
+"Title required"
+);
+
 return;
+
 }
 
 await fetch(
@@ -69,13 +73,10 @@ loadTasks();
 async function toggleTask(id){
 
 await fetch(
-
 `http://localhost:5000/tasks/${id}/toggle`,
-
 {
 method:"PATCH"
 }
-
 );
 
 loadTasks();
@@ -84,22 +85,18 @@ loadTasks();
 
 async function deleteTask(id){
 
-const ok=
-window.confirm(
+if(
+!window.confirm(
 "Delete task?"
-);
-
-if(!ok)
+)
+)
 return;
 
 await fetch(
-
 `http://localhost:5000/tasks/${id}`,
-
 {
 method:"DELETE"
 }
-
 );
 
 loadTasks();
@@ -108,13 +105,13 @@ loadTasks();
 
 async function editTask(task){
 
-const newTitle=
+const title=
 prompt(
 "Edit title",
 task.title
 );
 
-if(!newTitle)
+if(!title)
 return;
 
 await fetch(
@@ -133,7 +130,7 @@ headers:{
 body:
 JSON.stringify({
 
-title:newTitle,
+title,
 
 description:
 task.description,
@@ -151,24 +148,43 @@ loadTasks();
 
 }
 
-const filteredTasks=
-tasks.filter((task)=>{
+const filtered=
+tasks.filter(t=>{
 
 if(filter==="active")
-return !task.completed;
+return !t.completed;
 
 if(filter==="completed")
-return task.completed;
+return t.completed;
 
 return true;
 
 });
 
+const active=
+tasks.filter(
+t=>!t.completed
+).length;
+
+const complete=
+tasks.filter(
+t=>t.completed
+).length;
+
 return(
 
 <div
 style={{
-padding:"40px"
+
+maxWidth:"700px",
+
+margin:"auto",
+
+padding:"20px",
+
+fontFamily:
+"Arial"
+
 }}
 >
 
@@ -176,13 +192,40 @@ padding:"40px"
 TaskFlow
 </h1>
 
+<p>
+
+Active:
+{active}
+
+{" • "}
+
+Completed:
+{complete}
+
+</p>
+
 <input
-placeholder="Task title"
-value={title}
-onChange={(e)=>
+
+placeholder=
+"Task title"
+
+value=
+{title}
+
+onChange=
+{(e)=>
+
 setTitle(
 e.target.value
-)}
+)
+
+}
+
+style={{
+width:"100%",
+padding:"10px"
+}}
+
 />
 
 <br/><br/>
@@ -203,6 +246,14 @@ e.target.value
 )
 
 }
+
+style={{
+
+width:"100%",
+
+padding:"10px"
+
+}}
 
 />
 
@@ -229,42 +280,25 @@ e.target.value
 <br/><br/>
 
 <button
-onClick={
-addTask
-}
->
-
-Add Task
-
+onClick={addTask}>
+＋ Add
 </button>
 
 <hr/>
 
-<button
-onClick={()=>
-setFilter("all")
-}
->
+<button onClick={()=>setFilter("all")}>
 All
 </button>
 
 {" "}
 
-<button
-onClick={()=>
-setFilter("active")
-}
->
+<button onClick={()=>setFilter("active")}>
 Active
 </button>
 
 {" "}
 
-<button
-onClick={()=>
-setFilter("completed")
-}
->
+<button onClick={()=>setFilter("completed")}>
 Completed
 </button>
 
@@ -272,8 +306,17 @@ Completed
 
 {
 
-filteredTasks.map(
-(task)=>(
+filtered.length===0
+
+?
+
+<p>
+No tasks yet
+</p>
+
+:
+
+filtered.map(task=>(
 
 <div
 
@@ -281,21 +324,31 @@ key={
 task.id
 }
 
-style={
+style={{
 
-{
 border:
-"1px solid gray",
 
-padding:
-"12px",
+task.dueDate &&
+!task.completed &&
+new Date(task.dueDate)
+<
+new Date()
 
-margin:
-"10px"
+?
 
-}
+"2px solid red"
 
-}
+:
+
+"1px solid #ddd",
+
+padding:"16px",
+
+marginBottom:"12px",
+
+borderRadius:"12px"
+
+}}
 
 >
 
@@ -322,12 +375,13 @@ task.completed
 <p>
 
 Due:
+
 {" "}
 
 {
 task.dueDate
 ||
-"No due date"
+"-"
 }
 
 </p>
@@ -339,9 +393,7 @@ task.id
 )
 }
 >
-
 Toggle
-
 </button>
 
 {" "}
@@ -353,9 +405,7 @@ task
 )
 }
 >
-
 Edit
-
 </button>
 
 {" "}
@@ -367,9 +417,7 @@ task.id
 )
 }
 >
-
 Delete
-
 </button>
 
 </div>
